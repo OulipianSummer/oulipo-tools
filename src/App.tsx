@@ -22,6 +22,8 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import ThesaurusPage from './pages/ThesaurusPage/ThesaurusPage';
+import RhymingDictionaryPage from './pages/RhymingDictionaryPage/RhymingDictionaryPage';
 
 setupIonicReact();
 
@@ -33,10 +35,16 @@ const App: React.FC = () => {
           <Menu />
           <IonRouterOutlet id="main">
             <Route path="/" exact={true}>
-              <Redirect to="/page/Inbox" />
+              <Redirect to="/home" />
             </Route>
-            <Route path="/page/:name" exact={true}>
+            <Route path="/:name" exact={true}>
               <Page />
+            </Route>
+            <Route path="/letter-tools/lipogram-thesaurus" exact={true}>
+              <ThesaurusPage />
+            </Route>
+            <Route path="/letter-tools/lipogram-rhyming-dictionary" exact={true}>
+              <RhymingDictionaryPage />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>

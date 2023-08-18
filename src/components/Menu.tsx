@@ -10,87 +10,128 @@ import {
   IonNote,
 } from '@ionic/react';
 
+import React, { useState } from 'react'; // Import useState
+
 import { useLocation } from 'react-router-dom';
-import { archiveOutline, archiveSharp, bookmarkOutline, heartOutline, heartSharp, mailOutline, mailSharp, paperPlaneOutline, paperPlaneSharp, trashOutline, trashSharp, warningOutline, warningSharp } from 'ionicons/icons';
+import { documentTextOutline, documentTextSharp, helpOutline, helpSharp, homeOutline, homeSharp, libraryOutline, librarySharp, textOutline, textSharp } from 'ionicons/icons';
 import './Menu.css';
 
 interface AppPage {
-  url: string;
-  iosIcon: string;
-  mdIcon: string;
+  url?: string;
+  iosIcon?: string;
+  mdIcon?: string;
   title: string;
+  subItems?: AppPage[]; // Add subItems property for nested menu items
 }
 
 const appPages: AppPage[] = [
   {
-    title: 'Inbox',
-    url: '/page/Inbox',
-    iosIcon: mailOutline,
-    mdIcon: mailSharp
+    title: 'Home',
+    url: '/home',
+    iosIcon: homeOutline,
+    mdIcon: homeSharp
   },
   {
-    title: 'Outbox',
-    url: '/page/Outbox',
-    iosIcon: paperPlaneOutline,
-    mdIcon: paperPlaneSharp
+    title: 'About',
+    url: '/about',
+    iosIcon: helpOutline,
+    mdIcon: helpSharp
   },
   {
-    title: 'Favorites',
-    url: '/page/Favorites',
-    iosIcon: heartOutline,
-    mdIcon: heartSharp
+    title: 'Letter Tools',
+    iosIcon: textOutline,
+    mdIcon: textSharp,
   },
   {
-    title: 'Archived',
-    url: '/page/Archived',
-    iosIcon: archiveOutline,
-    mdIcon: archiveSharp
+    title: 'Word Tools',
+    iosIcon: documentTextOutline,
+    mdIcon: documentTextSharp,
+    subItems: [
+      {
+        title: 'Snowballer',
+        url: '/word-tools/snowballer',
+      },
+      {
+        title: 'Lipogram Thesaurus',
+        url: '/letter-tools/lipogram-thesaurus',
+      },
+      {
+        title: 'Lipogram Rhyming Dictionary',
+        url: '/letter-tools/lipogram-rhyming-dictionary',
+      }
+    ],
   },
   {
-    title: 'Trash',
-    url: '/page/Trash',
-    iosIcon: trashOutline,
-    mdIcon: trashSharp
+    title: 'Thematic Tools',
+    iosIcon: libraryOutline,
+    mdIcon: librarySharp,
+    subItems: [
+      {
+        title: 'Prompt Engine',
+        url: '/thematic-tools/prompt-engine',
+      },
+    ],
   },
-  {
-    title: 'Spam',
-    url: '/page/Spam',
-    iosIcon: warningOutline,
-    mdIcon: warningSharp
-  }
 ];
-
-const labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
 
 const Menu: React.FC = () => {
   const location = useLocation();
 
+  // State to manage the visibility of sub-menu items
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Handler for headings.
+  const handleHeadingClick = (event: React.MouseEvent, title: string) => {
+    event.preventDefault(); // Prevent event propagation
+    toggleItem(title);
+  };
+
+  // Function to toggle the visibility of sub-menu items
+  const toggleItem = (title: string) => {
+    if (expandedItems.includes(title)) {
+      setExpandedItems(expandedItems.filter(item => item !== title));
+    } else {
+      setExpandedItems([...expandedItems, title]);
+    }
+  };
+
   return (
     <IonMenu contentId="main" type="overlay">
       <IonContent>
-        <IonList id="inbox-list">
-          <IonListHeader>Inbox</IonListHeader>
-          <IonNote>hi@ionicframework.com</IonNote>
-          {appPages.map((appPage, index) => {
-            return (
-              <IonMenuToggle key={index} autoHide={false}>
-                <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
-                  <IonIcon slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
-                  <IonLabel>{appPage.title}</IonLabel>
-                </IonItem>
-              </IonMenuToggle>
-            );
-          })}
-        </IonList>
+        <IonList id="menu-list">
+          <IonListHeader>Oulipo Tools</IonListHeader>
+          <IonNote>A resource for constrained writing</IonNote>
 
-        <IonList id="labels-list">
-          <IonListHeader>Labels</IonListHeader>
-          {labels.map((label, index) => (
-            <IonItem lines="none" key={index}>
-              <IonIcon slot="start" icon={bookmarkOutline} />
-              <IonLabel>{label}</IonLabel>
-            </IonItem>
-          ))}
+          {appPages.map((appPage, index) => {
+            if (appPage.subItems) {
+              const isExpanded = expandedItems.includes(appPage.title);
+              
+              return (
+                <IonMenuToggle key={index} autoHide={false}>
+                  <IonItem className="has-submenu" lines="none" detail={true} onClick={(e) => handleHeadingClick(e, appPage.title)}>
+                    <IonIcon slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
+                    <IonLabel>{appPage.title}</IonLabel>
+                  </IonItem>
+                  {isExpanded && appPage.subItems.map((subItem, subIndex) => (
+                    <IonItem key={subIndex} className={location.pathname === subItem.url ? 'selected submenu-item' : 'submenu-item'} routerLink={subItem.url} routerDirection="none" lines="none" detail={false}>
+                      <IonLabel>{subItem.title}</IonLabel>
+                    </IonItem>
+                  ))}
+                </IonMenuToggle>
+              );
+            } else {
+              // Render plain links
+              return (
+                <IonMenuToggle key={index} autoHide={false}>
+                  <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
+                    <IonIcon slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
+                    <IonLabel>{appPage.title}</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+              );
+            }
+          })}
+
         </IonList>
       </IonContent>
     </IonMenu>
